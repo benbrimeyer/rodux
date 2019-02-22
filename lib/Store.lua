@@ -128,4 +128,17 @@ function Store:flush()
 	self._lastState = state
 end
 
+--[[
+	Replaces the current reducer with a new function
+]]
+function Store:replaceReducer(nextReducer)
+	assert(type(nextReducer) == "function", "replaceReducer nextReducer should be a function")
+	self._reducer = nextReducer
+
+	-- Any reducers that existed in both the new and old reducer
+	-- will receive the previous state. This grants the new state
+	-- the new state tree any relevant data from the old one.
+	self:dispatch({ type = "@@REPLACE" })
+end
+
 return Store

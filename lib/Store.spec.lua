@@ -339,4 +339,66 @@ return function()
 			store:destruct()
 		end)
 	end)
+
+	describe("replaceReducer", function()
+		it("should preserve the previous state when replacing a reducer", function()
+			local addReducer = function(state, action)
+				if action.type == "action" then
+					state = state + 1
+				end
+
+				return state
+			end
+			local subtractReducer = function(state, action)
+				if action.type == "action" then
+					state = state - 1
+				end
+
+				return state
+			end
+			local action = { type = "action" }
+
+			local store = Store.new(addReducer, 0)
+			store:dispatch(action)
+			expect(store:getState()).to.equal(1)
+			store:dispatch(action)
+			expect(store:getState()).to.equal(2)
+			store:replaceReducer(subtractReducer)
+			expect(store:getState()).to.equal(2)
+			store:dispatch(action)
+			expect(store:getState()).to.equal(1)
+			store:replaceReducer(addReducer)
+			expect(store:getSTate()).to.equal(1)
+			store:dispatch(action)
+			expect(store:getState()).to.equal(2)
+			store:dispatch(action)
+			expect(store:getState()).to.equal(3)
+		end)
+
+		it("should throw if nextReducer is not a function", function()
+			local function reducer(state)
+				return state
+			end
+			local store = Store.new(reducer, 0)
+			expect(function()
+				store:replaceReducer()
+			end).to.throw()
+
+			expect(function()
+				store:replaceReducer(123)
+			end).to.throw()
+
+			expect(function()
+				store:replaceReducer("superValidReducer")
+			end).to.throw()
+
+			expect(function()
+				store:replaceReducer(true)
+			end).to.throw()
+
+			expect(function()
+				store:replaceReducer({})
+			end).to.throw()
+		end)
+	end)
 end
